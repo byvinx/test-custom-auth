@@ -1,0 +1,11 @@
+{
+  "mongo-svi": {
+    "host": "127.0.0.1",
+    "port": 27017,
+    "database": "test-custom-auth",
+    "password": "",
+    "name": "mongo-svi",
+    "user": "",
+    "connector": "mongodb"
+  }
+}
