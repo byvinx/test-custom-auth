@@ -4,15 +4,66 @@ var CONFIG = app.get('config');
 var USER_SESSION_NAME = CONFIG.session.userSessionName;
   
 module.exports = function(Job) {
- Job.beforeRemote('find', function(context, user, next) {
-    console.log('START beforeRemote for FIND');
+    Job.afterRemote('**', function(context, modelInstance, next){
+    console.log('START afterRemote');
+    console.log(context.methodString, 'was invoked remotely');
+  
+    if (context.result) 
+    {
+        var req = context.req;
+        var session = req.session;
+    
+        var authUser = session[USER_SESSION_NAME];
+    
+        console.log('SESSION USER: ' + authUser);
+    
+        if (Array.isArray(modelInstance)) 
+        {
+            var answer = [];
+            
+            context.result.forEach(function(result){
+                console.log('FIND OWNER: ' + result['owner'] + ' FOR RECORD WITH ID: ' + result['id']);
+                if(result['owner'] === authUser)
+                {
+                    answer.push(result);
+                }             
+            });
+            
+            context.result = answer;
+        } 
+        else//is an object - {}
+        {
+            console.log(JSON.stringify(context.result));
+            console.log('FIND OBJECT');
+            console.log('FIND OWNER: ' + context.result['owner'] + ' FOR RECORD WITH ID: ' + context.result['id']);
+            
+            if(context.result['owner'])
+            {
+                if(context.result['owner'] !== authUser)
+                {
+                    context.result = {};
+                }
+            }
+            else
+            {
+                console.log('REQUIRED RECORDS NOT CONTAIN OWNER ');
+            }
+        }
+    }
+    next();
+  });
+ /*
+ //Filter owner's record add check in where clause
+ Job.beforeRemote('**', function(context, modelInstance, next) {
+    console.log('START beforeRemote');
+    console.log(context.methodString, 'was invoked remotely');
     
     var req = context.req;
     var session = req.session;
     
     var authUser = session[USER_SESSION_NAME];
     
-    console.log(authUser);
+    console.log('SESSION USER: ' + authUser);
     
     var inputFilter = context.args.filter;
     
@@ -29,21 +80,9 @@ module.exports = function(Job) {
         newClause = {'where': {'owner':authUser}};   
     }
    
-    context.args.filter = newClause;
-    console.log(newClause);
-    //console.log(inputFilter);
-    //console.log(inputWhereClause);
+    context.args.filter = newClause;//add owner check to original clause
     
     next();
-  });
-  
-   Job.afterRemote('find', function(context, user, next) {
-    console.log('START afterRemote for FIND');
-  
-    //var result = context.result;
-    //console.log(JSON.stringify(result));
-   
-    next();
-  });
+  });*/
   
 };
