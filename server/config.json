@@ -4,7 +4,7 @@
   "port": 3000,
   "remoting": {
     "context": {
-      "enableHttpContext": false
+      "enableHttpContext": true
     },
     "rest": {
       "normalizeHttpPath": false,
@@ -25,15 +25,17 @@
   },
   "legacyExplorer": false,
   "config": {
-    "session":{
-      "userSessionName":"user-session",	
-      "sessionOptions":{
-    	  "name": "test-custom-auth",
-    	  "secret": "my custom auth secret",
-    	  "saveUninitialized": true,
-    	  "resave": true
+    "session": {
+      "userSessionName": "user-session",
+      "sessionOptions": {
+        "name": "test-custom-auth",
+        "secret": "my custom auth secret",
+        "saveUninitialized": true,
+        "resave": true
       },
-	  "fileStoreOptions": {"path":"./sessions"}
-	}
+      "fileStoreOptions": {
+        "path": "./sessions"
+      }
+    }
   }
 }

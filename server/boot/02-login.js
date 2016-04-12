@@ -18,11 +18,11 @@ module.exports = function(app) {
     //var httpRequest = require('request');
     //httpRequest('http://www.google.com', function (error, response, body){});
     
-    if (req.query.username ==='Administrator' && req.query.password === 'password') 
+    if (req.query.username ==='admin' || req.query.username === 'project')//fake check 
     {
         if(req.session)//already created at client startup
         {
-            var successMessage = 'LOGIN: OK - USERNAME: ' + 'Administrator' + ' PASSWORD: ' + 'password';
+            var successMessage = 'LOGIN: OK - USERNAME: ' + req.query.username;
             console.log(successMessage);
             req.session[USER_SESSION_NAME] = req.query.username;
             
