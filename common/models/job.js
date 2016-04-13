@@ -4,7 +4,57 @@ var CONFIG = app.get('config');
 var USER_SESSION_NAME = CONFIG.session.userSessionName;
   
 module.exports = function(Job) {
-    Job.afterRemote('**', function(context, modelInstance, next){
+ 
+  Job.beforeRemote('create', function(context, modelInstance, next) {
+    console.log('---------------START beforeRemote--------------------');
+    console.log(context.methodString, 'was invoked remotely');
+    
+    next();
+  });
+  
+ //Filter owner's record add check in where clause
+ Job.beforeRemote('**', function(context, modelInstance, next) {
+    console.log('---------------START beforeRemote--------------------');
+    console.log(context.methodString, 'was invoked remotely');
+    
+    var req = context.req;
+    var session = req.session;
+    
+    var authUser = session[USER_SESSION_NAME];
+    
+    console.log('SESSION USER: ' + authUser);
+    
+    var inputFilter = context.args.filter;
+    
+    var inputFilterObj;
+  
+    if(inputFilter)
+    {
+        console.log('FOUND INPUT FILTER: ' + inputFilter);
+        
+        inputFilterObj = JSON.parse(inputFilter);
+        inputFilterObj.where.owner = authUser;//addind owner prop
+        
+        //context.args.filter = {'where': {'and': [{'name':'Richard'},{'owner':'project'}]}};
+        //newClause = {'where': {'and': [inputWhereClause, {'owner':authUser}]}};
+    }
+    else
+    {
+        console.log('NO FOUND INPUT FILTER');
+        
+        inputFilterObj = {'where': {'owner':authUser}}; 
+    }
+    
+     var inputFilterStr = JSON.stringify(inputFilterObj);
+     context.args.filter = inputFilterStr;
+     
+     console.log('INPUT FILTER SETTED TO: ' + inputFilterStr);
+    
+     next();
+  });
+  
+  /*
+  Job.afterRemote('**', function(context, modelInstance, next){
     console.log('START afterRemote');
     console.log(context.methodString, 'was invoked remotely');
   
@@ -52,37 +102,5 @@ module.exports = function(Job) {
     }
     next();
   });
- /*
- //Filter owner's record add check in where clause
- Job.beforeRemote('**', function(context, modelInstance, next) {
-    console.log('START beforeRemote');
-    console.log(context.methodString, 'was invoked remotely');
-    
-    var req = context.req;
-    var session = req.session;
-    
-    var authUser = session[USER_SESSION_NAME];
-    
-    console.log('SESSION USER: ' + authUser);
-    
-    var inputFilter = context.args.filter;
-    
-    var newClause;
-    
-    if(inputFilter)
-    {
-        var inputWhereClause = JSON.parse(inputFilter).where;
-        //context.args.filter = {'where': {'and': [{'name':'Richard'},{'owner':'project'}]}};
-        newClause = {'where': {'and': [inputWhereClause, {'owner':authUser}]}};
-    }
-    else
-    {
-        newClause = {'where': {'owner':authUser}};   
-    }
-   
-    context.args.filter = newClause;//add owner check to original clause
-    
-    next();
-  });*/
-  
+  */
 };
